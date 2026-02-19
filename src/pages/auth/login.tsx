@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useAuth } from '@/contexts/auth-context'
+import { AuthFooter } from '@/components/layout/auth-footer'
 import { toast } from 'sonner'
 
 const loginSchema = z.object({
@@ -123,16 +124,17 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md animate-fade-in-up">
-        <div className="mb-8 text-center">
-          <Link
-            to="/"
-            className="text-xl font-bold text-foreground transition-colors hover:text-primary"
-          >
-            CreatorOps Hub
-          </Link>
-        </div>
+    <div className="flex min-h-screen flex-col bg-background">
+      <div className="flex flex-1 items-center justify-center p-4">
+        <div className="w-full max-w-md animate-fade-in-up">
+          <div className="mb-8 text-center">
+            <Link
+              to="/"
+              className="text-xl font-bold text-foreground transition-colors hover:text-primary"
+            >
+              CreatorOps Hub
+            </Link>
+          </div>
 
         <div className="rounded-2xl border border-border bg-card p-6 shadow-card transition-all duration-300 hover:shadow-card-hover">
           <Tabs defaultValue={defaultTab} className="w-full">
@@ -359,7 +361,9 @@ export function LoginPage() {
             </TabsContent>
           </Tabs>
         </div>
+        </div>
       </div>
+      <AuthFooter />
     </div>
   )
 }

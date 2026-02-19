@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAuth } from '@/contexts/auth-context'
+import { AuthFooter } from '@/components/layout/auth-footer'
 import { toast } from 'sonner'
 
 const schema = z.object({
@@ -42,8 +43,9 @@ export function PasswordResetPage() {
 
   if (submitted) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background p-4">
-        <div className="w-full max-w-md animate-fade-in-up rounded-2xl border border-border bg-card p-6 shadow-card">
+      <div className="flex min-h-screen flex-col bg-background">
+        <div className="flex flex-1 items-center justify-center p-4">
+          <div className="w-full max-w-md animate-fade-in-up rounded-2xl border border-border bg-card p-6 shadow-card">
           <h1 className="text-xl font-bold text-foreground">
             Check your email
           </h1>
@@ -64,13 +66,16 @@ export function PasswordResetPage() {
               Try again
             </button>
           </p>
+          </div>
         </div>
+        <AuthFooter />
       </div>
     )
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+    <div className="flex min-h-screen flex-col bg-background">
+      <div className="flex flex-1 items-center justify-center p-4">
       <div className="w-full max-w-md animate-fade-in-up">
         <div className="mb-8 text-center">
           <Link
@@ -117,7 +122,9 @@ export function PasswordResetPage() {
             Back to login
           </Link>
         </div>
+        </div>
       </div>
+      <AuthFooter />
     </div>
   )
 }

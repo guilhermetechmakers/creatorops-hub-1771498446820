@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { Calendar, FileText, Search, TrendingUp } from 'lucide-react'
 import {
   Card,
@@ -126,8 +127,8 @@ export function DashboardOverview() {
                 <span className="text-sm">{ev.title}</span>
               </div>
             ))}
-            <Button variant="outline" className="w-full">
-              View full calendar
+            <Button variant="outline" className="w-full" asChild>
+              <Link to="/dashboard/planner">View full calendar</Link>
             </Button>
           </CardContent>
         </Card>

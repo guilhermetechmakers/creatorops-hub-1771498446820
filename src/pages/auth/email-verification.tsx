@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { Mail } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/contexts/auth-context'
+import { AuthFooter } from '@/components/layout/auth-footer'
 import { toast } from 'sonner'
 
 export function EmailVerificationPage() {
@@ -30,8 +31,9 @@ export function EmailVerificationPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md animate-fade-in-up">
+    <div className="flex min-h-screen flex-col bg-background">
+      <div className="flex flex-1 items-center justify-center p-4">
+        <div className="w-full max-w-md animate-fade-in-up">
         <div className="mb-8 text-center">
           <Link
             to="/"
@@ -78,7 +80,9 @@ export function EmailVerificationPage() {
             </Button>
           </Link>
         </div>
+        </div>
       </div>
+      <AuthFooter />
     </div>
   )
 }

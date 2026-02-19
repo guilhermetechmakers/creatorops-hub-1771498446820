@@ -16,6 +16,8 @@ import {
   ChevronRight,
   Plus,
   X,
+  User,
+  CreditCard,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -148,7 +150,37 @@ export function AppSidebar({ mobileOpen = false, onMobileClose }: AppSidebarProp
             </NavLink>
           ))}
 
-          <div className="border-t border-border pt-2">
+          <div className="border-t border-border pt-2 space-y-1">
+            <NavLink
+              to="/dashboard/profile"
+              className={({ isActive }) =>
+                cn(
+                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                  isActive
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                  collapsed && 'justify-center px-2'
+                )
+              }
+            >
+              <User className="h-5 w-5 shrink-0" />
+              {!collapsed && <span>Profile</span>}
+            </NavLink>
+            <NavLink
+              to="/dashboard/billing"
+              className={({ isActive }) =>
+                cn(
+                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                  isActive
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                  collapsed && 'justify-center px-2'
+                )
+              }
+            >
+              <CreditCard className="h-5 w-5 shrink-0" />
+              {!collapsed && <span>Billing</span>}
+            </NavLink>
             <NavLink
               to="/dashboard/settings"
               className={({ isActive }) =>

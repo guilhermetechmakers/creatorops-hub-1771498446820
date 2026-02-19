@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAuth } from '@/contexts/auth-context'
+import { AuthFooter } from '@/components/layout/auth-footer'
 import { toast } from 'sonner'
 
 const schema = z
@@ -49,8 +50,9 @@ export function PasswordUpdatePage() {
   const hasValidSession = !!session?.user
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md animate-fade-in-up">
+    <div className="flex min-h-screen flex-col bg-background">
+      <div className="flex flex-1 items-center justify-center p-4">
+        <div className="w-full max-w-md animate-fade-in-up">
         <div className="mb-8 text-center">
           <Link
             to="/"
@@ -126,7 +128,9 @@ export function PasswordUpdatePage() {
             Back to login
           </Link>
         </div>
+        </div>
       </div>
+      <AuthFooter />
     </div>
   )
 }

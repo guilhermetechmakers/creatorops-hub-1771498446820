@@ -3,9 +3,16 @@ import { Outlet, Link, useNavigate } from 'react-router-dom'
 import { AppSidebar } from '@/components/layout/app-sidebar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { useAuth } from '@/contexts/auth-context'
 import { DashboardBreadcrumb } from '@/components/layout/dashboard-breadcrumb'
-import { Search, Bell, User, LogOut, ChevronLeft, ChevronRight, Menu } from 'lucide-react'
+import { Search, Bell, User, LogOut, ChevronLeft, ChevronRight, Menu, HelpCircle, CreditCard } from 'lucide-react'
 
 export function DashboardLayout() {
   const { user, logout } = useAuth()
@@ -36,7 +43,7 @@ export function DashboardLayout() {
             >
               <Menu className="h-5 w-5" />
             </Button>
-            <div className="hidden shrink-0 items-center gap-1 md:flex">
+            <div className="flex shrink-0 items-center gap-1">
               <Button
                 variant="ghost"
                 size="icon"
@@ -71,20 +78,42 @@ export function DashboardLayout() {
                 <Bell className="h-5 w-5" />
               </Link>
             </Button>
-            <Button variant="ghost" className="gap-2" asChild>
-              <Link to="/dashboard/profile">
-                <User className="h-5 w-5" />
-                <span className="hidden sm:inline">{user?.name ?? 'User'}</span>
-              </Link>
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="Log out"
-              onClick={handleLogout}
-            >
-              <LogOut className="h-5 w-5" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="gap-2">
+                  <User className="h-5 w-5" />
+                  <span className="hidden sm:inline">{user?.name ?? 'User'}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem asChild>
+                  <Link to="/dashboard/profile">
+                    <User className="mr-2 h-4 w-4" />
+                    Profile
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/dashboard/billing">
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    Billing
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/help">
+                    <HelpCircle className="mr-2 h-4 w-4" />
+                    Help
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="text-accent focus:text-accent"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Log out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </header>
 
