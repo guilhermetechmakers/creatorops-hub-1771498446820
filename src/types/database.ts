@@ -210,3 +210,47 @@ export interface OpenClawGeneratedOutput {
   created_at: string
   updated_at: string
 }
+
+export interface Project {
+  id: string
+  user_id: string
+  name: string
+  status: 'draft' | 'active' | 'archived' | 'completed'
+  channel?: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface ContentItem {
+  id: string
+  project_id?: string | null
+  user_id: string
+  title: string
+  channel?: string | null
+  status: 'draft' | 'in_review' | 'scheduled' | 'published' | 'archived'
+  due_date?: string | null
+  assignee_id?: string | null
+  tags: string[]
+  created_at: string
+  updated_at: string
+}
+
+export interface SavedView {
+  id: string
+  user_id: string
+  name: string
+  filters: Record<string, unknown>
+  sort_by?: string | null
+  sort_order?: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface ContentItemFilters {
+  status?: string
+  channel?: string
+  assignee_id?: string
+  tags?: string[]
+  date_from?: string
+  date_to?: string
+}

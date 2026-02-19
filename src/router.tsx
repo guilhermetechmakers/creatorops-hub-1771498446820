@@ -8,6 +8,7 @@ import { PasswordUpdatePage } from '@/pages/auth/password-update'
 import { EmailVerificationPage } from '@/pages/auth/email-verification'
 import { DashboardOverview } from '@/pages/dashboard/overview'
 import { ProjectsPage } from '@/pages/dashboard/projects'
+import { ContentDetailPage } from '@/pages/dashboard/content-detail'
 import { FileLibraryPage } from '@/pages/dashboard/library'
 import { LibraryAssetDetailPage } from '@/pages/dashboard/library-asset-detail'
 import { ContentStudioPage } from '@/pages/dashboard/studio'
@@ -48,6 +49,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <DashboardOverview /> },
       { path: 'projects', element: <ProjectsPage /> },
+      { path: 'content/:id', element: <ContentDetailPage /> },
       { path: 'library', element: <FileLibraryPage /> },
       { path: 'library/:id', element: <LibraryAssetDetailPage /> },
       { path: 'studio', element: <ContentStudioPage /> },
