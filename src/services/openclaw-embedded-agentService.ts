@@ -149,18 +149,30 @@ export const openclawEmbeddedAgentService = {
   },
 
   async getJob(
-    _accessToken: string,
+    accessToken: string,
     jobId: string
   ): Promise<{ job: OpenClawResearchJob }> {
-    const { data: job, error } = await supabase
-      .from('openclaw_research_jobs')
-      .select('*')
-      .eq('id', jobId)
-      .single()
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL ?? ''
+    const url = `${supabaseUrl}/functions/v1/openclaw-proxy?action=get&job_id=${encodeURIComponent(jobId)}`
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+    const json = await res.json()
+    if (json.error) throw new Error(json.error)
+    if (!json.job) throw new Error('Job not found')
+    return { job: json.job as OpenClawResearchJob }
+  },
 
-    if (error) throw error
-    if (!job) throw new Error('Job not found')
-    return { job: job as OpenClawResearchJob }
+  async getJobStatus(
+    accessToken: string,
+    jobId: string
+  ): Promise<{ job: OpenClawResearchJob; status: string; progress?: number }> {
+    const { job } = await this.getJob(accessToken, jobId)
+    return {
+      job,
+      status: job.status,
+      progress: job.progress ?? 0,
+    }
   },
 
   async listJobs(

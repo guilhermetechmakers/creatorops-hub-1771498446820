@@ -35,6 +35,7 @@ export function ResearchPage() {
             Store and manage OpenClaw research outputs
           </p>
         </div>
+        <OpenClawEmbeddedAgent asDialogTrigger />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">

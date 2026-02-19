@@ -151,11 +151,14 @@ export function DashboardOverview() {
                     {d.channel} · {d.updated}
                   </p>
                 </div>
-                <Button variant="ghost" size="sm">
-                  Open
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/dashboard/studio">Open</Link>
                 </Button>
               </div>
             ))}
+            <Button variant="outline" className="w-full" asChild>
+              <Link to="/dashboard/studio">Open Content Studio</Link>
+            </Button>
           </CardContent>
         </Card>
 
@@ -177,11 +180,14 @@ export function DashboardOverview() {
                     {r.sources} sources
                   </p>
                 </div>
-                <Button variant="ghost" size="sm">
-                  View
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/dashboard/research">View</Link>
                 </Button>
               </div>
             ))}
+            <Button variant="outline" className="w-full" asChild>
+              <Link to="/dashboard/research">Open Research Workspace</Link>
+            </Button>
           </CardContent>
         </Card>
       </div>

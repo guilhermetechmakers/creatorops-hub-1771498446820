@@ -58,6 +58,8 @@ export interface OpenClawEmbeddedAgentProps {
   /** Alias for onInsert - called with content when user inserts into editor */
   onInsertContent?: (content: string) => void
   compact?: boolean
+  /** Show as dialog trigger button instead of inline content */
+  asDialogTrigger?: boolean
 }
 
 function normalizeSources(s: unknown): OpenClawSource[] {
@@ -78,10 +80,12 @@ export function OpenClawEmbeddedAgent({
   onInsert,
   onInsertContent,
   compact = false,
+  asDialogTrigger = false,
 }: OpenClawEmbeddedAgentProps) {
   const { user, session } = useAuth()
   const queryClient = useQueryClient()
   const [activeTab, setActiveTab] = useState<'research' | 'generate'>('research')
+  const [dialogOpen, setDialogOpen] = useState(false)
 
   // Research state
   const [query, setQuery] = useState('')
@@ -182,11 +186,12 @@ export function OpenClawEmbeddedAgent({
     } else {
       return
     }
-    onOpenChange?.(false)
+    if (asDialogTrigger) setDialogOpen(false)
+    else onOpenChange?.(false)
     setQuery('')
     setResult(null)
     toast.success('Inserted into editor')
-  }, [result, onInsert, onInsertContent, onOpenChange])
+  }, [result, onInsert, onInsertContent, onOpenChange, asDialogTrigger])
 
   const handleInsertGenerate = useCallback(() => {
     if (!generateResult?.output?.content) return
@@ -197,21 +202,23 @@ export function OpenClawEmbeddedAgent({
     } else {
       return
     }
-    onOpenChange?.(false)
+    if (asDialogTrigger) setDialogOpen(false)
+    else onOpenChange?.(false)
     setPrompt('')
     setGenerateResult(null)
     toast.success('Inserted into editor')
-  }, [generateResult, onInsert, onInsertContent, onOpenChange])
+  }, [generateResult, onInsert, onInsertContent, onOpenChange, asDialogTrigger])
 
   const handleClose = useCallback(() => {
-    onOpenChange?.(false)
+    if (asDialogTrigger) setDialogOpen(false)
+    else onOpenChange?.(false)
     setQuery('')
     setResult(null)
     setPrompt('')
     setGenerateResult(null)
     setIsLoading(false)
     setIsGenerating(false)
-  }, [onOpenChange])
+  }, [onOpenChange, asDialogTrigger])
 
   const canInsert = !!(onInsert || onInsertContent)
 
@@ -516,6 +523,54 @@ export function OpenClawEmbeddedAgent({
       </TabsContent>
     </Tabs>
   )
+
+  const dialogContent = (
+    <Dialog
+      open={asDialogTrigger ? dialogOpen : open}
+      onOpenChange={asDialogTrigger ? setDialogOpen : onOpenChange}
+    >
+      <DialogContent
+        className="max-w-lg"
+        onPointerDownOutside={asDialogTrigger ? () => setDialogOpen(false) : handleClose}
+        onEscapeKeyDown={asDialogTrigger ? () => setDialogOpen(false) : handleClose}
+      >
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-primary" />
+            OpenClaw AI
+          </DialogTitle>
+          <DialogDescription>
+            Research topics on the web and generate structured outputs with
+            provenance. Human-in-the-loop approval for generated content.
+          </DialogDescription>
+        </DialogHeader>
+        {tabbedContent}
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={() => (asDialogTrigger ? setDialogOpen(false) : onOpenChange?.(false))}
+          >
+            Close
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+
+  if (asDialogTrigger) {
+    return (
+      <>
+        <Button
+          onClick={() => setDialogOpen(true)}
+          className="transition-all duration-200 hover:scale-[1.02] hover:shadow-md active:scale-[0.98]"
+        >
+          <Sparkles className="h-5 w-5" />
+          Open AI Panel
+        </Button>
+        {dialogContent}
+      </>
+    )
+  }
 
   if (compact && open !== undefined && onOpenChange) {
     return (

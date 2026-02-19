@@ -15,6 +15,7 @@ const MIN_CONFIDENCE_THRESHOLD = 0.5
 
 const OUTPUT_TYPES = ['thread', 'script', 'caption', 'article']
 
+/** Exponential backoff with jitter */
 async function sleep(attempt: number): Promise<void> {
   const delay = INITIAL_BACKOFF_MS * Math.pow(2, attempt) + Math.random() * 200
   await new Promise((r) => setTimeout(r, delay))
@@ -142,9 +143,16 @@ serve(async (req) => {
           const data = await res.json()
           content = data.content ?? ''
           confidence = Math.max(MIN_CONFIDENCE_THRESHOLD, Math.min(1, data.confidence ?? 0.88))
+        } else if (res.status >= 400 && res.status < 500) {
+          const errBody = await res.json().catch(() => ({}))
+          const msg = errBody?.error ?? errBody?.message ?? `OpenClaw API error: ${res.status}`
+          return new Response(
+            JSON.stringify({ error: msg }),
+            { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
         }
       } catch {
-        // Fall through to mock
+        // Fall through to mock on network/5xx errors
       }
     }
 

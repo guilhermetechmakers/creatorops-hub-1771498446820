@@ -77,14 +77,62 @@ async function checkQuota(
 async function recordUsage(
   supabase: ReturnType<typeof createClient>,
   userId: string,
-  jobId: string
+  jobId: string,
+  tokensUsed = 0,
+  costUnits = 0.001
 ): Promise<void> {
   await supabase.from('openclaw_usage_accounting').insert({
     user_id: userId,
     job_id: jobId,
     api_calls: 1,
-    tokens_used: 0,
+    tokens_used: tokensUsed,
+    cost_units: costUnits,
   })
+}
+
+/** Archive source to Supabase Storage and record in openclaw_source_snapshots */
+async function archiveSourceSnapshot(
+  supabase: ReturnType<typeof createClient>,
+  jobId: string,
+  source: { url: string; title?: string; snippet?: string }
+): Promise<string | null> {
+  try {
+    const hash = await simpleHash(source.url)
+    const storagePath = `${jobId}/${hash}.json`
+    const content = JSON.stringify({
+      url: source.url,
+      title: source.title,
+      snippet: source.snippet,
+      archived_at: new Date().toISOString(),
+    })
+
+    const { error: uploadError } = await supabase.storage
+      .from('openclaw-snapshots')
+      .upload(storagePath, content, {
+        contentType: 'application/json',
+        upsert: true,
+      })
+
+    if (uploadError) return null
+
+    await supabase.from('openclaw_source_snapshots').insert({
+      job_id: jobId,
+      source_url: source.url,
+      storage_path: storagePath,
+      content_hash: hash,
+    })
+    return storagePath
+  } catch {
+    return null
+  }
+}
+
+async function simpleHash(str: string): Promise<string> {
+  const encoder = new TextEncoder()
+  const data = encoder.encode(str)
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('').slice(0, 16)
 }
 
 serve(async (req) => {
@@ -261,7 +309,19 @@ serve(async (req) => {
       })
       .eq('id', job.id)
 
-    await recordUsage(supabase, user.id, job.id)
+    for (const s of sources) {
+      const path = await archiveSourceSnapshot(supabase, job.id, s)
+      if (path) s.snapshot_path = path
+    }
+    if (sources.length > 0) {
+      await supabase
+        .from('openclaw_research_jobs')
+        .update({ sources, updated_at: new Date().toISOString() })
+        .eq('id', job.id)
+    }
+
+    const tokensEstimate = Math.ceil((summary.length + JSON.stringify(sources).length) / 4)
+    await recordUsage(supabase, user.id, job.id, tokensEstimate, 0.001 + tokensEstimate * 0.000001)
 
     const { data: updatedJob } = await supabase
       .from('openclaw_research_jobs')
