@@ -1,14 +1,31 @@
-import { Search, Plus, Tag } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
+import { Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
+import { useAuth } from '@/contexts/auth-context'
+import { openclawEmbeddedAgentService } from '@/services/openclaw-embedded-agentService'
+import { OpenClawEmbeddedAgent } from '@/components/openclaw-embedded-agent'
+import { cn } from '@/lib/utils'
 
-const mockResearch = [
-  { id: '1', title: 'Competitor analysis - Tech trends 2025', sources: 8, tags: ['market', 'tech'] },
-  { id: '2', title: 'Audience insights - Gen Z preferences', sources: 12, tags: ['audience'] },
-  { id: '3', title: 'Content format benchmarks', sources: 5, tags: ['benchmarks'] },
-]
 
 export function ResearchPage() {
+  const { user, session } = useAuth()
+
+  const { data: jobsData, isLoading } = useQuery({
+    queryKey: ['openclaw-research-jobs', user?.id, session?.access_token],
+    queryFn: () =>
+      openclawEmbeddedAgentService.listJobs(session!.access_token!, {
+        limit: 20,
+      }),
+    enabled: !!user?.id && !!session?.access_token,
+  })
+
+  const jobs = jobsData?.jobs ?? []
+
+  if (!user) return null
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -18,55 +35,73 @@ export function ResearchPage() {
             Store and manage OpenClaw research outputs
           </p>
         </div>
-        <Button>
-          <Plus className="h-4 w-4" />
-          New Research
-        </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {mockResearch.map((r) => (
-          <Card
-            key={r.id}
-            className="cursor-pointer transition-all duration-300 hover:shadow-card-hover"
-          >
-            <CardHeader className="pb-2">
-              <div className="flex items-start justify-between">
-                <Search className="h-8 w-8 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">
-                  {r.sources} sources
-                </span>
-              </div>
-              <h3 className="font-semibold">{r.title}</h3>
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2 space-y-6">
+          {isLoading ? (
+            <div className="space-y-4">
+              {[1, 2, 3, 4].map((i) => (
+                <Skeleton key={i} className="h-32 rounded-lg" />
+              ))}
+            </div>
+          ) : !jobs?.length ? (
+            <Card className="flex cursor-pointer items-center justify-center border-dashed transition-colors hover:bg-muted/50">
+              <CardContent className="p-8 text-center">
+                <Search className="mx-auto h-12 w-12 text-muted-foreground" />
+                <p className="mt-2 font-medium">Run OpenClaw research</p>
+                <p className="text-sm text-muted-foreground">
+                  Capture sources and generate summaries
+                </p>
+                <p className="mt-4 text-sm text-muted-foreground">
+                  Use the panel on the right to start your first research.
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2">
+              {jobs.map((job) => (
+                <Link key={job.id} to={`/dashboard/research/${job.id}`}>
+                  <Card
+                    className={cn(
+                      'h-full cursor-pointer transition-all duration-300',
+                      'hover:shadow-card-hover hover:scale-[1.01]'
+                    )}
+                  >
+                    <CardHeader className="pb-2">
+                      <div className="flex items-start justify-between">
+                        <Search className="h-8 w-8 shrink-0 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">
+                          {job.status === 'completed' ? 'Completed' : job.status}
+                        </span>
+                      </div>
+                      <h3 className="font-semibold line-clamp-2">{job.query}</h3>
+                    </CardHeader>
+                    <CardContent>
+                      <Button variant="outline" size="sm" className="w-full">
+                        View details
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div>
+          <Card className="sticky top-4">
+            <CardHeader>
+              <h3 className="font-semibold">OpenClaw AI Agent</h3>
+              <p className="text-sm text-muted-foreground">
+                Research topics and generate content
+              </p>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-wrap gap-1">
-                {r.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="inline-flex items-center gap-1 rounded bg-muted px-2 py-0.5 text-xs"
-                  >
-                    <Tag className="h-3 w-3" />
-                    {tag}
-                  </span>
-                ))}
-              </div>
-              <Button variant="outline" size="sm" className="mt-4 w-full">
-                View details
-              </Button>
+              <OpenClawEmbeddedAgent />
             </CardContent>
           </Card>
-        ))}
-        <Card className="flex cursor-pointer items-center justify-center border-dashed transition-colors hover:bg-muted/50">
-          <div className="p-8 text-center">
-            <Search className="mx-auto h-12 w-12 text-muted-foreground" />
-            <p className="mt-2 font-medium">Run OpenClaw research</p>
-            <p className="text-sm text-muted-foreground">
-              Capture sources and generate summaries
-            </p>
-            <Button className="mt-4">Start research</Button>
-          </div>
-        </Card>
+        </div>
       </div>
     </div>
   )

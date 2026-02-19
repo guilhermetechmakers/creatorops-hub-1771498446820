@@ -12,6 +12,7 @@ import { FileLibraryPage } from '@/pages/dashboard/library'
 import { LibraryAssetDetailPage } from '@/pages/dashboard/library-asset-detail'
 import { ContentStudioPage } from '@/pages/dashboard/studio'
 import { ResearchPage } from '@/pages/dashboard/research'
+import { ResearchDetailPage } from '@/pages/dashboard/research-detail'
 import { PlannerPage } from '@/pages/dashboard/planner'
 import { InboxPage } from '@/pages/dashboard/inbox'
 import { IntegrationsPage } from '@/pages/dashboard/integrations'
@@ -51,6 +52,7 @@ export const router = createBrowserRouter([
       { path: 'library/:id', element: <LibraryAssetDetailPage /> },
       { path: 'studio', element: <ContentStudioPage /> },
       { path: 'research', element: <ResearchPage /> },
+      { path: 'research/:id', element: <ResearchDetailPage /> },
       { path: 'planner', element: <PlannerPage /> },
       { path: 'inbox', element: <InboxPage /> },
       { path: 'integrations', element: <IntegrationsPage /> },

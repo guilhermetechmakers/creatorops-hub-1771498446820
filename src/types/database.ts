@@ -152,3 +152,61 @@ export interface FileAsset {
   created_at: string
   updated_at: string
 }
+
+export interface OpenClawEmbeddedAgent {
+  id: string
+  user_id: string
+  title: string
+  description?: string | null
+  status: string
+  created_at: string
+  updated_at: string
+}
+
+/** Source format for API responses (url, title, snippet) */
+export interface OpenClawSource {
+  url: string
+  title?: string
+  snippet?: string
+  timestamp?: string
+  confidence?: number
+}
+
+export interface OpenClawResearchJob {
+  id: string
+  user_id: string
+  agent_id?: string | null
+  query: string
+  output_type?: string
+  status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled'
+  progress?: number
+  output_text?: string | null
+  output_json?: Record<string, unknown> | null
+  sources?: OpenClawSource[] | unknown
+  metadata?: Record<string, unknown>
+  content_item_id?: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface OpenClawResearchSource {
+  id: string
+  job_id: string
+  url: string
+  title?: string | null
+  snippet?: string | null
+  snapshot_path?: string | null
+  created_at: string
+}
+
+export interface OpenClawGeneratedOutput {
+  id: string
+  user_id: string
+  job_id?: string | null
+  output_type: string
+  content: string
+  confidence_score?: number | null
+  approved: boolean
+  created_at: string
+  updated_at: string
+}

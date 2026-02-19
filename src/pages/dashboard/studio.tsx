@@ -1,9 +1,19 @@
-import { Sparkles, Image, FileText } from 'lucide-react'
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { Image, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { OpenClawEmbeddedAgent } from '@/components/openclaw-embedded-agent'
 
 export function ContentStudioPage() {
+  const [documentTitle, setDocumentTitle] = useState('')
+  const [editorContent, setEditorContent] = useState('')
+
+  const handleInsert = (text: string) => {
+    setEditorContent((prev) => (prev ? `${prev}\n\n${text}` : text))
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -21,6 +31,8 @@ export function ContentStudioPage() {
                 <Input
                   placeholder="Untitled document"
                   className="border-0 bg-transparent text-lg font-semibold focus-visible:ring-0"
+                  value={documentTitle}
+                  onChange={(e) => setDocumentTitle(e.target.value)}
                 />
                 <span className="rounded bg-muted px-2 py-0.5 text-xs">
                   Draft
@@ -29,19 +41,39 @@ export function ContentStudioPage() {
             </CardHeader>
             <CardContent className="min-h-[400px] p-6">
               <div className="prose prose-invert max-w-none">
-                <div className="rounded-lg border border-dashed border-border p-8 text-center text-muted-foreground">
-                  <p>Start typing or use OpenClaw to generate content...</p>
-                  <Button variant="outline" className="mt-4">
-                    <Sparkles className="h-4 w-4" />
-                    Generate with OpenClaw
-                  </Button>
-                </div>
+                {editorContent ? (
+                  <div className="rounded-lg border border-border bg-card p-6">
+                    <pre className="whitespace-pre-wrap text-sm">{editorContent}</pre>
+                  </div>
+                ) : (
+                  <div className="rounded-lg border border-dashed border-border p-8 text-center text-muted-foreground">
+                    <p>Start typing or use OpenClaw to generate content...</p>
+                    <p className="mt-2 text-sm">
+                      Use the AI panel on the right to research topics and generate drafts.
+                    </p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
         </div>
 
         <div className="space-y-4">
+          <Card>
+            <CardHeader>
+              <h3 className="font-semibold">OpenClaw AI</h3>
+              <p className="text-sm text-muted-foreground">
+                Research and generate content
+              </p>
+            </CardHeader>
+            <CardContent>
+              <OpenClawEmbeddedAgent
+                compact
+                onInsert={handleInsert}
+              />
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <h3 className="font-semibold">Linked Assets</h3>
@@ -65,8 +97,8 @@ export function ContentStudioPage() {
               <div className="flex flex-col items-center gap-2 py-8 text-center text-muted-foreground">
                 <FileText className="h-10 w-10" />
                 <p className="text-sm">No research linked</p>
-                <Button variant="outline" size="sm">
-                  Add research
+                <Button variant="outline" size="sm" asChild>
+                  <Link to="/dashboard/research">Add research</Link>
                 </Button>
               </div>
             </CardContent>
