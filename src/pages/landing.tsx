@@ -1,8 +1,11 @@
 import { Link } from 'react-router-dom'
 import { FileImage, Search, Calendar, Mail } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useAuth } from '@/contexts/auth-context'
 
 export function LandingPage() {
+  const { isAuthenticated } = useAuth()
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero */}
@@ -10,14 +13,24 @@ export function LandingPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-card via-background to-card opacity-80" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(255,59,48,0.08)_0%,_transparent_50%)]" />
         <nav className="relative mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-          <span className="text-xl font-bold text-foreground">CreatorOps Hub</span>
+          <Link to="/" className="text-xl font-bold text-foreground">
+            CreatorOps Hub
+          </Link>
           <div className="flex items-center gap-4">
-            <Link to="/login">
-              <Button variant="ghost">Log in</Button>
-            </Link>
-            <Link to="/signup">
-              <Button>Get started</Button>
-            </Link>
+            {isAuthenticated ? (
+              <Link to="/dashboard">
+                <Button>Go to Dashboard</Button>
+              </Link>
+            ) : (
+              <>
+                <Link to="/login">
+                  <Button variant="ghost">Log in</Button>
+                </Link>
+                <Link to="/signup">
+                  <Button>Get started</Button>
+                </Link>
+              </>
+            )}
           </div>
         </nav>
 

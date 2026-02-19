@@ -1,23 +1,11 @@
-import { Link } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
+import { PublicNav } from '@/components/layout/public-nav'
+import { PublicFooter } from '@/components/layout/public-footer'
 
 export function PrivacyPage() {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border">
-        <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-          <Link to="/" className="text-xl font-bold text-foreground">
-            CreatorOps Hub
-          </Link>
-          <div className="flex gap-4">
-            <Link to="/login">
-              <Button variant="ghost">Log in</Button>
-            </Link>
-            <Link to="/signup">
-              <Button>Sign up</Button>
-            </Link>
-          </div>
-        </nav>
+        <PublicNav />
       </header>
 
       <main className="mx-auto max-w-3xl px-6 py-16">
@@ -28,6 +16,10 @@ export function PrivacyPage() {
           privacy@creatorops.com.
         </p>
       </main>
+
+      <footer className="border-t border-border">
+        <PublicFooter />
+      </footer>
     </div>
   )
 }
