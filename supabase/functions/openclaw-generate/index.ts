@@ -9,8 +9,33 @@ const corsHeaders = {
 
 const DAILY_QUOTA = 100
 const RATE_LIMIT_WINDOW_MS = 24 * 60 * 60 * 1000
+const MAX_RETRIES = 3
+const INITIAL_BACKOFF_MS = 500
+const MIN_CONFIDENCE_THRESHOLD = 0.5
 
 const OUTPUT_TYPES = ['thread', 'script', 'caption', 'article']
+
+async function sleep(attempt: number): Promise<void> {
+  const delay = INITIAL_BACKOFF_MS * Math.pow(2, attempt) + Math.random() * 200
+  await new Promise((r) => setTimeout(r, delay))
+}
+
+async function fetchWithRetry(url: string, options: RequestInit, attempt = 0): Promise<Response> {
+  try {
+    const res = await fetch(url, options)
+    if (!res.ok && res.status >= 500 && attempt < MAX_RETRIES - 1) {
+      await sleep(attempt)
+      return fetchWithRetry(url, options, attempt + 1)
+    }
+    return res
+  } catch (err) {
+    if (attempt < MAX_RETRIES - 1) {
+      await sleep(attempt)
+      return fetchWithRetry(url, options, attempt + 1)
+    }
+    throw err
+  }
+}
 
 async function checkQuota(supabase: ReturnType<typeof createClient>, userId: string): Promise<{ allowed: boolean; message?: string }> {
   const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString()
@@ -108,7 +133,7 @@ serve(async (req) => {
 
     if (openclawApiUrl) {
       try {
-        const res = await fetch(`${openclawApiUrl}/generate`, {
+        const res = await fetchWithRetry(`${openclawApiUrl}/generate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ prompt: sanitizedPrompt, output_type: type }),
@@ -116,7 +141,7 @@ serve(async (req) => {
         if (res.ok) {
           const data = await res.json()
           content = data.content ?? ''
-          confidence = data.confidence ?? 0.88
+          confidence = Math.max(MIN_CONFIDENCE_THRESHOLD, Math.min(1, data.confidence ?? 0.88))
         }
       } catch {
         // Fall through to mock

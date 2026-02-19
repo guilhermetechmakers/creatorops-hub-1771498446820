@@ -9,6 +9,48 @@ const corsHeaders = {
 
 const DAILY_QUOTA = 50
 const RATE_LIMIT_WINDOW_MS = 24 * 60 * 60 * 1000
+const MAX_RETRIES = 3
+const INITIAL_BACKOFF_MS = 500
+const MIN_CONFIDENCE_THRESHOLD = 0.5
+
+/** Exponential backoff with jitter */
+async function sleep(attempt: number): Promise<void> {
+  const delay = INITIAL_BACKOFF_MS * Math.pow(2, attempt) + Math.random() * 200
+  await new Promise((r) => setTimeout(r, delay))
+}
+
+/** Hallucination heuristic: flag if summary lacks source attribution for factual claims */
+function computeHallucinationRisk(sources: unknown[], summary: string): number {
+  if (!Array.isArray(sources) || sources.length === 0) return 0.3
+  const hasUrls = summary.match(/https?:\/\/[^\s]+/g)
+  const sourceMentions = (summary.match(/\b(source|according to|cited|reference)\b/gi) ?? []).length
+  if (sources.length >= 3 && (hasUrls?.length ?? 0) > 0) return 0.1
+  if (sources.length >= 2 && sourceMentions >= 1) return 0.15
+  if (sources.length >= 1) return 0.2
+  return 0.35
+}
+
+/** Fetch OpenClaw API with retries and backoff for 5xx/network errors */
+async function fetchWithRetry(
+  url: string,
+  options: RequestInit,
+  attempt = 0
+): Promise<Response> {
+  try {
+    const res = await fetch(url, options)
+    if (!res.ok && res.status >= 500 && attempt < MAX_RETRIES - 1) {
+      await sleep(attempt)
+      return fetchWithRetry(url, options, attempt + 1)
+    }
+    return res
+  } catch (err) {
+    if (attempt < MAX_RETRIES - 1) {
+      await sleep(attempt)
+      return fetchWithRetry(url, options, attempt + 1)
+    }
+    throw err
+  }
+}
 
 async function checkQuota(
   supabase: ReturnType<typeof createClient>,
@@ -161,7 +203,7 @@ serve(async (req) => {
 
     if (openclawApiUrl) {
       try {
-        const res = await fetch(`${openclawApiUrl}/research`, {
+        const res = await fetchWithRetry(`${openclawApiUrl}/research`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ query: sanitizedQuery }),
@@ -176,7 +218,10 @@ serve(async (req) => {
             confidence: data.confidence ?? 0.85,
           }))
           summary = data.summary ?? ''
-          confidence = data.confidence ?? 0.85
+          confidence = Math.min(data.confidence ?? 0.85, 1 - computeHallucinationRisk(sources, summary))
+          if (confidence < MIN_CONFIDENCE_THRESHOLD) {
+            confidence = MIN_CONFIDENCE_THRESHOLD
+          }
         }
       } catch {
         // Fall through to mock
@@ -201,6 +246,7 @@ serve(async (req) => {
         },
       ]
       summary = `Research summary for ${sanitizedQuery}: Key findings and insights based on web sources.`
+      confidence = Math.max(confidence, 1 - computeHallucinationRisk(sources, summary))
     }
 
     await supabase

@@ -1,17 +1,37 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { Image, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { OpenClawEmbeddedAgent } from '@/components/openclaw-embedded-agent'
+import type { OpenClawSource } from '@/types/database'
 
 export function ContentStudioPage() {
+  const location = useLocation()
   const [documentTitle, setDocumentTitle] = useState('')
   const [editorContent, setEditorContent] = useState('')
 
-  const handleInsert = (text: string) => {
-    setEditorContent((prev) => (prev ? `${prev}\n\n${text}` : text))
+  useEffect(() => {
+    const state = location.state as { insertContent?: string; sources?: OpenClawSource[] } | null
+    if (state?.insertContent) {
+      const sourceBlock =
+        state.sources && state.sources.length > 0
+          ? `\n\n---\nSources:\n${state.sources.map((s) => `- ${s.title || s.url}: ${s.url}`).join('\n')}`
+          : ''
+      setEditorContent((prev) =>
+        prev ? `${prev}\n\n${state.insertContent}${sourceBlock}` : `${state.insertContent}${sourceBlock}`
+      )
+      window.history.replaceState({}, '', location.pathname)
+    }
+  }, [location.state, location.pathname])
+
+  const handleInsert = (text: string, sources?: OpenClawSource[]) => {
+    const sourceBlock =
+      sources && sources.length > 0
+        ? `\n\n---\nSources:\n${sources.map((s) => `- ${s.title || s.url}: ${s.url}`).join('\n')}`
+        : ''
+    setEditorContent((prev) => (prev ? `${prev}\n\n${text}${sourceBlock}` : `${text}${sourceBlock}`))
   }
 
   return (

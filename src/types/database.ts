@@ -170,6 +170,8 @@ export interface OpenClawSource {
   snippet?: string
   timestamp?: string
   confidence?: number
+  /** Storage path for archived web snapshot (S3/Supabase Storage) */
+  snapshot_path?: string
 }
 
 export interface OpenClawResearchJob {

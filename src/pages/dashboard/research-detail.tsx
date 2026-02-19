@@ -1,11 +1,12 @@
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { Search, ArrowLeft, ExternalLink, Check } from 'lucide-react'
+import { Search, ArrowLeft, ExternalLink, Check, PenSquare, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/contexts/auth-context'
 import { openclawEmbeddedAgentService } from '@/services/openclaw-embedded-agentService'
+import { OpenClawEmbeddedAgent } from '@/components/openclaw-embedded-agent'
 import type { OpenClawSource } from '@/types/database'
 import { cn } from '@/lib/utils'
 
@@ -15,6 +16,7 @@ function formatDate(iso: string): string {
 
 export function ResearchDetailPage() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
   const { user, session } = useAuth()
 
   const { data, isLoading, error } = useQuery({
@@ -135,6 +137,42 @@ export function ResearchDetailPage() {
               </ul>
             </div>
           )}
+
+          <div className="flex flex-wrap gap-2 border-t border-border pt-4">
+            <Button
+              asChild
+              className="transition-all duration-200 hover:scale-[1.02] hover:shadow-md active:scale-[0.98]"
+            >
+              <Link
+                to="/dashboard/studio"
+                state={{
+                  insertContent: job.output_text ?? undefined,
+                  sources: sources.length > 0 ? sources : undefined,
+                }}
+              >
+                <Sparkles className="h-4 w-4" />
+                Use in Content Studio
+              </Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="overflow-hidden transition-all duration-300 hover:shadow-card-hover">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <PenSquare className="h-5 w-5 text-primary" />
+            <h3 className="font-semibold">Generate from this research</h3>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Create threads, scripts, or captions using this research as context
+          </p>
+        </CardHeader>
+        <CardContent>
+          <OpenClawEmbeddedAgent
+            researchJobId={job.id}
+            onInsertContent={(content) => navigate('/dashboard/studio', { state: { insertContent: content } })}
+          />
         </CardContent>
       </Card>
     </div>

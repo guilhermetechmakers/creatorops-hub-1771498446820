@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import type {
   OpenClawEmbeddedAgent,
+  OpenClawGeneratedOutput,
   OpenClawResearchJob,
   OpenClawSource,
 } from '@/types/database'
@@ -10,6 +11,18 @@ export interface CreateResearchPayload {
   content_item_id?: string
   agent_id?: string
   output_type?: 'summary' | 'thread' | 'script' | 'caption'
+}
+
+export interface CreateGeneratePayload {
+  prompt: string
+  output_type?: 'thread' | 'script' | 'caption' | 'article'
+  job_id?: string
+}
+
+export interface GenerateResponse {
+  output_id: string
+  output: OpenClawGeneratedOutput
+  confidence_score: number
 }
 
 export interface ResearchResponse {
@@ -60,6 +73,81 @@ export const openclawEmbeddedAgentService = {
     }
   },
 
+  async createGenerate(
+    accessToken: string,
+    payload: CreateGeneratePayload
+  ): Promise<GenerateResponse> {
+    const { data, error } = await supabase.functions.invoke('openclaw-generate', {
+      body: {
+        prompt: payload.prompt,
+        output_type: payload.output_type ?? 'article',
+        job_id: payload.job_id,
+      },
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+
+    if (error) throw error
+    if (data?.error) throw new Error(data.error)
+    return data as GenerateResponse
+  },
+
+  async getGeneratedOutput(
+    _accessToken: string,
+    outputId: string
+  ): Promise<OpenClawGeneratedOutput> {
+    const { data, error } = await supabase
+      .from('openclaw_generated_outputs')
+      .select('*')
+      .eq('id', outputId)
+      .single()
+
+    if (error) throw error
+    if (!data) throw new Error('Output not found')
+    return data as OpenClawGeneratedOutput
+  },
+
+  async listGeneratedOutputs(
+    _accessToken: string,
+    options?: { limit?: number; offset?: number; job_id?: string }
+  ): Promise<{ outputs: OpenClawGeneratedOutput[]; count: number }> {
+    let query = supabase
+      .from('openclaw_generated_outputs')
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false })
+
+    if (options?.job_id) {
+      query = query.eq('job_id', options.job_id)
+    }
+    if (options?.limit) {
+      query = query.limit(options.limit)
+    }
+    if (options?.offset !== undefined) {
+      query = query.range(
+        options.offset,
+        options.offset + (options.limit ?? 20) - 1
+      )
+    }
+
+    const { data, count, error } = await query
+    if (error) throw error
+    return { outputs: (data ?? []) as OpenClawGeneratedOutput[], count: count ?? 0 }
+  },
+
+  async approveOutput(
+    _accessToken: string,
+    outputId: string
+  ): Promise<OpenClawGeneratedOutput> {
+    const { data, error } = await supabase
+      .from('openclaw_generated_outputs')
+      .update({ approved: true, updated_at: new Date().toISOString() })
+      .eq('id', outputId)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data as OpenClawGeneratedOutput
+  },
+
   async getJob(
     _accessToken: string,
     jobId: string
@@ -108,6 +196,16 @@ export const openclawEmbeddedAgentService = {
     const json = await res.json()
     if (json.error) throw new Error(json.error)
     return json
+  },
+
+  async cancelJob(accessToken: string, jobId: string): Promise<{ success: boolean; job: OpenClawResearchJob }> {
+    const { data, error } = await supabase.functions.invoke('openclaw-proxy', {
+      body: { action: 'cancel', job_id: jobId },
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+    if (error) throw error
+    if (data?.error) throw new Error(data.error)
+    return data as { success: boolean; job: OpenClawResearchJob }
   },
 
   async listAgents(userId: string): Promise<OpenClawEmbeddedAgent[]> {
