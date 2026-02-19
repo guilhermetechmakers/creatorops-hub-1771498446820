@@ -29,8 +29,10 @@ async function handleResponse<T>(response: Response): Promise<T> {
   return response.text() as Promise<T>
 }
 
+const AUTH_TOKEN_KEY = 'auth_token'
+
 function getAuthHeaders(): HeadersInit {
-  const token = localStorage.getItem('auth_token')
+  const token = localStorage.getItem(AUTH_TOKEN_KEY)
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
   }

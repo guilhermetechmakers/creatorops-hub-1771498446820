@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { Bell, Plug, Zap, Globe, Palette } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
@@ -50,7 +51,9 @@ export function SettingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button variant="outline">Manage integrations</Button>
+            <Button variant="outline" asChild>
+              <Link to="/dashboard/integrations">Manage integrations</Link>
+            </Button>
           </CardContent>
         </Card>
 

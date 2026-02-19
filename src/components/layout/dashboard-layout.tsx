@@ -1,12 +1,18 @@
-import { Outlet, Link } from 'react-router-dom'
+import { Outlet, Link, useNavigate } from 'react-router-dom'
 import { AppSidebar } from '@/components/layout/app-sidebar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/contexts/auth-context'
-import { Search, Bell, User } from 'lucide-react'
+import { Search, Bell, User, LogOut } from 'lucide-react'
 
 export function DashboardLayout() {
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+
+  const handleLogout = async () => {
+    await logout()
+    navigate('/login')
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
@@ -33,6 +39,14 @@ export function DashboardLayout() {
                 <User className="h-5 w-5" />
                 <span className="hidden sm:inline">{user?.name ?? 'User'}</span>
               </Link>
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Log out"
+              onClick={handleLogout}
+            >
+              <LogOut className="h-5 w-5" />
             </Button>
           </div>
         </header>

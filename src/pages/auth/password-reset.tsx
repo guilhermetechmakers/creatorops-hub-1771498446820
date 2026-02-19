@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useAuth } from '@/contexts/auth-context'
 import { toast } from 'sonner'
 
 const schema = z.object({
@@ -17,20 +18,23 @@ type FormData = z.infer<typeof schema>
 export function PasswordResetPage() {
   const [submitted, setSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const { resetPassword } = useAuth()
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: { email: '' },
   })
 
-  const onSubmit = async (_data: FormData) => {
+  const onSubmit = async (data: FormData) => {
     setIsLoading(true)
     try {
-      await new Promise((r) => setTimeout(r, 1000))
+      await resetPassword(data.email)
       setSubmitted(true)
       toast.success('Reset link sent to your email')
-    } catch {
-      toast.error('Failed to send reset link')
+    } catch (err) {
+      const msg =
+        err instanceof Error ? err.message : 'Failed to send reset link'
+      toast.error(msg)
     } finally {
       setIsLoading(false)
     }
@@ -39,7 +43,7 @@ export function PasswordResetPage() {
   if (submitted) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background p-4">
-        <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-card">
+        <div className="w-full max-w-md animate-fade-in-up rounded-2xl border border-border bg-card p-6 shadow-card">
           <h1 className="text-xl font-bold text-foreground">
             Check your email
           </h1>
@@ -55,7 +59,7 @@ export function PasswordResetPage() {
             <button
               type="button"
               onClick={() => setSubmitted(false)}
-              className="text-foreground underline hover:no-underline"
+              className="text-foreground underline transition-colors hover:no-underline"
             >
               Try again
             </button>
@@ -67,14 +71,17 @@ export function PasswordResetPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md animate-fade-in-up">
         <div className="mb-8 text-center">
-          <Link to="/" className="text-xl font-bold text-foreground">
+          <Link
+            to="/"
+            className="text-xl font-bold text-foreground transition-colors hover:text-primary"
+          >
             CreatorOps Hub
           </Link>
         </div>
 
-        <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
+        <div className="rounded-2xl border border-border bg-card p-6 shadow-card transition-all duration-300 hover:shadow-card-hover">
           <h1 className="text-xl font-bold text-foreground">
             Reset your password
           </h1>
@@ -105,7 +112,7 @@ export function PasswordResetPage() {
 
           <Link
             to="/login"
-            className="mt-4 block text-center text-sm text-muted-foreground hover:text-foreground"
+            className="mt-4 block text-center text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             Back to login
           </Link>

@@ -4,6 +4,7 @@ import { ProtectedRoute } from '@/components/protected-route'
 import { LandingPage } from '@/pages/landing'
 import { LoginPage } from '@/pages/auth/login'
 import { PasswordResetPage } from '@/pages/auth/password-reset'
+import { PasswordUpdatePage } from '@/pages/auth/password-update'
 import { EmailVerificationPage } from '@/pages/auth/email-verification'
 import { DashboardOverview } from '@/pages/dashboard/overview'
 import { ProjectsPage } from '@/pages/dashboard/projects'
@@ -29,6 +30,7 @@ export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
   { path: '/signup', element: <LoginPage /> },
   { path: '/password-reset', element: <PasswordResetPage /> },
+  { path: '/update-password', element: <PasswordUpdatePage /> },
   { path: '/verify-email', element: <EmailVerificationPage /> },
   { path: '/about', element: <AboutPage /> },
   { path: '/help', element: <HelpPage /> },
