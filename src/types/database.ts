@@ -125,3 +125,30 @@ export interface GoogleIntegrationGmailCalendar {
   created_at: string
   updated_at: string
 }
+
+export interface FileUploadManagement {
+  id: string
+  user_id: string
+  title: string
+  description?: string | null
+  status: string
+  created_at: string
+  updated_at: string
+}
+
+export interface FileAsset {
+  id: string
+  user_id: string
+  folder_id?: string | null
+  storage_path: string
+  filename: string
+  content_type: string
+  size_bytes: number
+  version: number
+  parent_asset_id?: string | null
+  thumbnail_path?: string | null
+  tags: string[]
+  status: string
+  created_at: string
+  updated_at: string
+}
